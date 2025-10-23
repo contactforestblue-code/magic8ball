@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Classic Snake</title>
+    <title>Nokia Snake</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
     <script src="sketch.js" defer></script>
     <style>
@@ -11,44 +12,101 @@
         padding: 0;
         background: #001a00;
         color: #9f9;
-        height: 100%;
         font-family: 'Courier New', monospace;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
+        height: 100%;
+        overflow: hidden;
       }
 
       h1 {
-        margin-bottom: 10px;
+        margin-top: 20px;
+        margin-bottom: 5px;
         font-size: 2rem;
-        letter-spacing: 2px;
-        text-shadow: 0 0 4px #0f0;
+        text-shadow: 0 0 6px #0f0;
       }
 
       canvas {
         border: 4px solid #0f0;
-        box-shadow: 0 0 15px #0f0;
+        box-shadow: 0 0 20px #0f0;
         image-rendering: pixelated;
+        margin-top: 10px;
+        max-width: 95vw;
+        height: auto !important;
       }
 
       p {
-        margin-top: 10px;
         font-size: 1rem;
-        color: #6f6;
-        text-shadow: 0 0 5px #0f0;
+        margin: 3px;
+        color: #7f7;
+        text-shadow: 0 0 4px #0f0;
       }
 
       .instructions {
-        font-size: 0.9rem;
-        margin-top: 5px;
-        color: #7f7;
+        font-size: 0.85rem;
+        opacity: 0.8;
+        margin-top: 8px;
+      }
+
+      /* Mobile controls */
+      .controls {
+        display: none;
+        margin-top: 15px;
+        grid-template-columns: repeat(3, 60px);
+        grid-template-rows: repeat(3, 60px);
+        gap: 10px;
+        justify-content: center;
+      }
+
+      .btn {
+        background: #003300;
+        border: 2px solid #0f0;
+        color: #9f9;
+        font-size: 1.2rem;
+        border-radius: 8px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+      }
+
+      .btn:active {
+        background: #0f0;
+        color: #000;
+      }
+
+      @media (max-width: 600px) {
+        h1 {
+          font-size: 1.6rem;
+        }
+        p {
+          font-size: 0.9rem;
+        }
+        .controls {
+          display: grid;
+        }
       }
     </style>
   </head>
   <body>
-    <h1>Nokia Snake</h1>
-    <p>Use Arrow Keys to move</p>
-    <p class="instructions">Wrap-around enabled — press ENTER to restart</p>
+    <h1>🐍 Nokia Snake</h1>
+    <p>Use Arrow Keys or Buttons to move</p>
+    <p class="instructions">Press ENTER or tap Restart after Game Over</p>
+
+    <!-- Mobile touch controls -->
+    <div class="controls">
+      <div></div>
+      <div class="btn" id="up">▲</div>
+      <div></div>
+      <div class="btn" id="left">◀</div>
+      <div class="btn" id="restart">⟳</div>
+      <div class="btn" id="right">▶</div>
+      <div></div>
+      <div class="btn" id="down">▼</div>
+      <div></div>
+    </div>
   </body>
 </html>
