@@ -43,7 +43,7 @@
       }
 
       button {
-        margin-top: 20px;
+        margin-top: 15px;
         background: #0f0;
         color: #000;
         font-size: 1rem;
@@ -71,15 +71,25 @@
         text-shadow: 0 0 5px #0f0;
         min-height: 60px;
       }
+
+      #nowPlaying {
+        margin-top: 10px;
+        color: #0f0;
+        text-align: center;
+        font-size: 0.9rem;
+        text-shadow: 0 0 5px #0f0;
+      }
     </style>
   </head>
   <body>
     <h1>🔮 Dream Interpreter</h1>
     <textarea id="dreamInput" placeholder="Describe your dream..."></textarea>
     <button id="interpretBtn">Interpret Dream</button>
+    <button id="muteBtn">Mute</button>
+    <div id="nowPlaying"></div>
     <div id="result"></div>
 
-    <!-- Autoplay dreamguide.mp3 -->
-    <audio id="dreamAudio" src="dreamguide.mp3" autoplay loop></audio>
+    <!-- The audio file -->
+    <audio id="dreamAudio" src="dreamguide.mp3" loop></audio>
   </body>
 </html>
