@@ -1,7 +1,8 @@
+// ======== DREAM INTERPRETER LOGIC ========
 let audioStarted = false;
-const fadeDuration = 500; // milliseconds
+const fadeDuration = 500;
 let muted = false;
-let lastIndex = -1; // tracks last shown interpretation
+let lastIndex = -1;
 
 const interpretations = [
   "Your subconscious is urging you to release something you’ve been holding onto.",
@@ -34,10 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const nowPlaying = document.getElementById("nowPlaying");
   const audio = document.getElementById("dreamAudio");
 
-  // Animate "Now Playing" text with subtle flicker
+  // Animate "Now Playing" text flicker
   function animateNowPlaying() {
-    if (!nowPlaying) return;
-    const intensity = 0.5 + Math.random() * 0.5; // random 0.5–1.0
+    const intensity = 0.5 + Math.random() * 0.5;
     nowPlaying.style.textShadow = `
       0 0 ${4 * intensity}px #0f0,
       0 0 ${8 * intensity}px #0f0,
@@ -45,16 +45,13 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
     requestAnimationFrame(animateNowPlaying);
   }
+  animateNowPlaying();
 
-  animateNowPlaying(); // start animation loop
-
-  // Fade-in audio
   function startAudioFadeIn() {
     if (audioStarted) return;
     audioStarted = true;
     audio.volume = 0;
-    audio.play().catch(() => {}); // browser may block autoplay
-
+    audio.play().catch(() => {});
     nowPlaying.textContent = 'Now Playing - "Dream Guide" by Act Three';
 
     let start = null;
@@ -62,11 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!start) start = timestamp;
       const elapsed = timestamp - start;
       audio.volume = muted ? 0 : Math.min(elapsed / fadeDuration, 1);
-      if (elapsed < fadeDuration) {
-        requestAnimationFrame(fadeStep);
-      } else {
-        audio.volume = muted ? 0 : 1;
-      }
+      if (elapsed < fadeDuration) requestAnimationFrame(fadeStep);
+      else audio.volume = muted ? 0 : 1;
     };
     requestAnimationFrame(fadeStep);
   }
@@ -80,7 +74,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Select random interpretation, avoiding repeat
     let randomIndex;
     do {
       randomIndex = Math.floor(Math.random() * interpretations.length);
@@ -91,13 +84,60 @@ document.addEventListener("DOMContentLoaded", () => {
     result.innerHTML = `<em>${randomInterpretation}</em>`;
   });
 
-  // Start audio on first touch anywhere
   document.body.addEventListener("touchstart", startAudioFadeIn, { once: true });
 
-  // Mute/unmute toggle
   muteBtn.addEventListener("click", () => {
     muted = !muted;
     audio.volume = muted ? 0 : 1;
     muteBtn.textContent = muted ? "Unmute" : "Mute";
   });
 });
+
+// ======== PARTICLE BACKGROUND ========
+let particles = [];
+
+function setup() {
+  const cnv = createCanvas(window.innerWidth, window.innerHeight);
+  cnv.position(0,0);
+  cnv.style('z-index','1'); // behind UI
+  for (let i = 0; i < 150; i++) {
+    particles.push(new Particle());
+  }
+}
+
+function windowResized() {
+  resizeCanvas(window.innerWidth, window.innerHeight);
+}
+
+function draw() {
+  background(0, 20); // semi-transparent for trailing effect
+  for (let p of particles) {
+    p.update();
+    p.show();
+  }
+}
+
+class Particle {
+  constructor() {
+    this.x = random(width);
+    this.y = random(height);
+    this.size = random(2, 5);
+    this.speedX = random(-0.3, 0.3);
+    this.speedY = random(-0.5, -0.1); // drifting upward
+    this.alpha = random(50, 150);
+  }
+
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    if (this.y < -10) this.y = height + 10;
+    if (this.x < -10) this.x = width + 10;
+    if (this.x > width + 10) this.x = -10;
+  }
+
+  show() {
+    noStroke();
+    fill(0, 255, 0, this.alpha);
+    ellipse(this.x, this.y, this.size);
+  }
+}
