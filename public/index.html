@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <title>Dream Interpreter</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
     <script src="sketch.js" defer></script>
     <style>
       html, body {
@@ -72,11 +71,6 @@
         text-shadow: 0 0 5px #0f0;
         min-height: 60px;
       }
-
-      @media (max-width: 600px) {
-        h1 { font-size: 1.6rem; }
-        textarea { font-size: 0.9rem; }
-      }
     </style>
   </head>
   <body>
@@ -84,5 +78,8 @@
     <textarea id="dreamInput" placeholder="Describe your dream..."></textarea>
     <button id="interpretBtn">Interpret Dream</button>
     <div id="result"></div>
+
+    <!-- Autoplay dreamguide.mp3 -->
+    <audio id="dreamAudio" src="dreamguide.mp3" autoplay loop></audio>
   </body>
 </html>
