@@ -47,13 +47,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   animateNowPlaying();
 
+  // ======== AUDIO HANDLER ========
   function startAudioFadeIn() {
     if (audioStarted) return;
     audioStarted = true;
-    audio.volume = 0;
-    audio.play().catch(() => {});
+
     nowPlaying.textContent = 'Now Playing - "Dream Guide" by Act Three';
 
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          audio.volume = 0;
+          fadeInAudio();
+        })
+        .catch(() => {
+          console.log("Audio blocked. Waiting for user gesture.");
+        });
+    }
+  }
+
+  function fadeInAudio() {
     let start = null;
     const fadeStep = (timestamp) => {
       if (!start) start = timestamp;
@@ -65,6 +79,10 @@ document.addEventListener("DOMContentLoaded", () => {
     requestAnimationFrame(fadeStep);
   }
 
+  // First touch anywhere triggers audio for mobile
+  document.body.addEventListener("touchstart", startAudioFadeIn, { once: true });
+
+  // Button triggers audio and interpretation
   btn.addEventListener("click", () => {
     startAudioFadeIn();
 
@@ -84,8 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     result.innerHTML = `<em>${randomInterpretation}</em>`;
   });
 
-  document.body.addEventListener("touchstart", startAudioFadeIn, { once: true });
-
+  // Mute/unmute
   muteBtn.addEventListener("click", () => {
     muted = !muted;
     audio.volume = muted ? 0 : 1;
@@ -93,18 +110,26 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// ======== PARTICLE BACKGROUND WITH PARALLAX ========
+// ======== PARTICLE BACKGROUND WITH SPARKS & PARALLAX ========
 let particles = [];
 let sparks = [];
 let offsetX = 0;
 let offsetY = 0;
+let tiltX = 0;
+let tiltY = 0;
 
 function setup() {
   const cnv = createCanvas(window.innerWidth, window.innerHeight);
   cnv.position(0,0);
   cnv.style('z-index','1'); // behind UI
-  for (let i = 0; i < 150; i++) {
-    particles.push(new Particle());
+  for (let i = 0; i < 150; i++) particles.push(new Particle());
+
+  // Device tilt support
+  if (window.DeviceOrientationEvent) {
+    window.addEventListener('deviceorientation', (event) => {
+      tiltX = event.gamma / 30; // left/right tilt (~-1 to 1)
+      tiltY = event.beta / 30;  // forward/back tilt (~-1 to 1)
+    }, true);
   }
 }
 
@@ -115,21 +140,27 @@ function windowResized() {
 function draw() {
   background(0, 20);
 
-  // Parallax offset based on mouse
-  offsetX = map(mouseX, 0, width, -20, 20);
-  offsetY = map(mouseY, 0, height, -20, 20);
+  // Mouse-based parallax (for desktop)
+  const mouseOffsetX = map(mouseX, 0, width, -20, 20);
+  const mouseOffsetY = map(mouseY, 0, height, -20, 20);
 
+  // Combine mouse and tilt for total offset
+  offsetX = mouseOffsetX + tiltX * 30;
+  offsetY = mouseOffsetY + tiltY * 30;
+
+  // Normal particles
   for (let p of particles) {
     p.update();
-    p.show(offsetX * 0.5, offsetY * 0.5); // smaller offset for background
+    p.show(offsetX * 0.5, offsetY * 0.5);
   }
 
-  // Occasionally create spark particles
+  // Occasionally spawn sparks
   if (random() < 0.02) sparks.push(new Spark());
 
+  // Sparks update
   for (let i = sparks.length - 1; i >= 0; i--) {
     sparks[i].update();
-    sparks[i].show(offsetX, offsetY); // bigger offset for foreground sparks
+    sparks[i].show(offsetX, offsetY);
     if (sparks[i].alpha <= 0) sparks.splice(i, 1);
   }
 }
