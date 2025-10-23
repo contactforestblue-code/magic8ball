@@ -93,8 +93,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// ======== PARTICLE BACKGROUND ========
+// ======== PARTICLE BACKGROUND WITH PARALLAX ========
 let particles = [];
+let sparks = [];
+let offsetX = 0;
+let offsetY = 0;
 
 function setup() {
   const cnv = createCanvas(window.innerWidth, window.innerHeight);
@@ -110,21 +113,37 @@ function windowResized() {
 }
 
 function draw() {
-  background(0, 20); // semi-transparent for trailing effect
+  background(0, 20);
+
+  // Parallax offset based on mouse
+  offsetX = map(mouseX, 0, width, -20, 20);
+  offsetY = map(mouseY, 0, height, -20, 20);
+
   for (let p of particles) {
     p.update();
-    p.show();
+    p.show(offsetX * 0.5, offsetY * 0.5); // smaller offset for background
+  }
+
+  // Occasionally create spark particles
+  if (random() < 0.02) sparks.push(new Spark());
+
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    sparks[i].update();
+    sparks[i].show(offsetX, offsetY); // bigger offset for foreground sparks
+    if (sparks[i].alpha <= 0) sparks.splice(i, 1);
   }
 }
 
+// ====== NORMAL PARTICLES ======
 class Particle {
   constructor() {
     this.x = random(width);
     this.y = random(height);
     this.size = random(2, 5);
     this.speedX = random(-0.3, 0.3);
-    this.speedY = random(-0.5, -0.1); // drifting upward
+    this.speedY = random(-0.5, -0.1);
     this.alpha = random(50, 150);
+    this.colorOffset = random(1000);
   }
 
   update() {
@@ -133,11 +152,56 @@ class Particle {
     if (this.y < -10) this.y = height + 10;
     if (this.x < -10) this.x = width + 10;
     if (this.x > width + 10) this.x = -10;
+    this.colorOffset += 0.01;
   }
 
-  show() {
+  show(pxOffset = 0, pyOffset = 0) {
     noStroke();
-    fill(0, 255, 0, this.alpha);
-    ellipse(this.x, this.y, this.size);
+    const hue = 120 + 60 * sin(this.colorOffset);
+    colorMode(HSB, 360, 100, 100, 255);
+    fill(hue, 80, 100, this.alpha);
+    ellipse(this.x + pxOffset, this.y + pyOffset, this.size);
+    colorMode(RGB, 255);
+  }
+}
+
+// ====== SPARK PARTICLES ======
+class Spark {
+  constructor() {
+    this.x = random(width);
+    this.y = random(height);
+    this.size = random(5, 12);
+    this.speedX = random(-0.1, 0.1);
+    this.speedY = random(-0.2, -0.05);
+    this.alpha = 0;
+    this.maxAlpha = random(150, 255);
+    this.fadeIn = true;
+    this.colorOffset = random(1000);
+  }
+
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+
+    if (this.fadeIn) {
+      this.alpha += 5;
+      if (this.alpha >= this.maxAlpha) this.fadeIn = false;
+    } else {
+      this.alpha -= 2;
+    }
+
+    if (this.y < -10) this.y = height + 10;
+    if (this.x < -10) this.x = width + 10;
+    if (this.x > width + 10) this.x = -10;
+    this.colorOffset += 0.02;
+  }
+
+  show(pxOffset = 0, pyOffset = 0) {
+    noStroke();
+    const hue = 120 + 60 * sin(this.colorOffset);
+    colorMode(HSB, 360, 100, 100, 255);
+    fill(hue, 80, 100, this.alpha);
+    ellipse(this.x + pxOffset, this.y + pyOffset, this.size);
+    colorMode(RGB, 255);
   }
 }
