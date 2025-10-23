@@ -14,8 +14,6 @@ function setup() {
   snake = new Snake();
   foodLocation();
   textAlign(CENTER, CENTER);
-
-  // Touch controls
   setupMobileControls();
 }
 
@@ -35,6 +33,7 @@ function draw() {
     textSize(16);
     text("Press ENTER or tap ⟳ to restart", width / 2, height / 2 + 10);
     text(`Score: ${score}`, width / 2, height / 2 + 40);
+    noLoop(); // pause rendering until restart
     return;
   }
 
@@ -46,10 +45,12 @@ function draw() {
     score++;
   }
 
+  // Draw food
   fill(255, 0, 0);
   noStroke();
   rect(food.x * rez, food.y * rez, rez, rez);
 
+  // Draw score
   fill(255);
   textSize(14);
   text(`Score: ${score}`, width / 2, 15);
@@ -60,14 +61,16 @@ function keyPressed() {
   else if (keyCode === RIGHT_ARROW) snake.setDir(1, 0);
   else if (keyCode === DOWN_ARROW) snake.setDir(0, 1);
   else if (keyCode === UP_ARROW) snake.setDir(0, -1);
-  else if (keyCode === ENTER && gameOver) resetGame();
+  else if (keyCode === ENTER && gameOver) restartGame();
 }
 
-function resetGame() {
+function restartGame() {
+  // Fully reset the game state
   gameOver = false;
   score = 0;
   snake = new Snake();
   foodLocation();
+  loop(); // restart draw() loop
 }
 
 class Snake {
@@ -104,16 +107,15 @@ class Snake {
     this.body.push(head);
     if (this.body.length > this.len + 1) this.body.shift();
 
-    this.endGame();
+    this.checkCollision();
   }
 
-  endGame() {
+  checkCollision() {
     let head = this.body[this.body.length - 1];
     for (let i = 0; i < this.body.length - 1; i++) {
       let part = this.body[i];
       if (part.x === head.x && part.y === head.y) {
         gameOver = true;
-        noLoop();
       }
     }
   }
@@ -154,11 +156,10 @@ function setupMobileControls() {
   }
 
   const restartBtn = document.getElementById("restart");
-  restartBtn.addEventListener("touchstart", e => {
-    e.preventDefault();
-    if (gameOver) {
-      loop();
-      resetGame();
-    }
-  });
+  if (restartBtn) {
+    restartBtn.addEventListener("touchstart", e => {
+      e.preventDefault();
+      restartGame();
+    });
+  }
 }
