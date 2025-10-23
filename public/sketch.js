@@ -1,6 +1,7 @@
 let audioStarted = false;
 const fadeDuration = 500; // milliseconds
 let muted = false;
+let lastIndex = -1; // tracks last shown interpretation
 
 const interpretations = [
   "Your subconscious is urging you to release something you’ve been holding onto.",
@@ -13,7 +14,6 @@ const interpretations = [
   "The imagery suggests healing and renewal after a difficult period.",
   "You are being guided to confront something you’ve been avoiding.",
   "Your dream speaks of freedom — a desire to break away from limitations.",
-  // 10 new messages
   "The dream symbolizes a journey into your own psyche and self-discovery.",
   "An unknown fear is trying to be acknowledged through your dream imagery.",
   "This dream hints at hidden talents that are ready to be explored.",
@@ -33,6 +33,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const result = document.getElementById("result");
   const nowPlaying = document.getElementById("nowPlaying");
   const audio = document.getElementById("dreamAudio");
+
+  // Animate "Now Playing" text with subtle flicker
+  function animateNowPlaying() {
+    if (!nowPlaying) return;
+    const intensity = 0.5 + Math.random() * 0.5; // random 0.5–1.0
+    nowPlaying.style.textShadow = `
+      0 0 ${4 * intensity}px #0f0,
+      0 0 ${8 * intensity}px #0f0,
+      0 0 ${12 * intensity}px #0f0
+    `;
+    requestAnimationFrame(animateNowPlaying);
+  }
+
+  animateNowPlaying(); // start animation loop
 
   // Fade-in audio
   function startAudioFadeIn() {
@@ -66,7 +80,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const randomInterpretation = interpretations[Math.floor(Math.random() * interpretations.length)];
+    // Select random interpretation, avoiding repeat
+    let randomIndex;
+    do {
+      randomIndex = Math.floor(Math.random() * interpretations.length);
+    } while (randomIndex === lastIndex && interpretations.length > 1);
+
+    lastIndex = randomIndex;
+    const randomInterpretation = interpretations[randomIndex];
     result.innerHTML = `<em>${randomInterpretation}</em>`;
   });
 
