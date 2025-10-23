@@ -1,80 +1,146 @@
-let answers = [
-  "Yes.",
-  "No.",
-  "Maybe.",
-  "Ask again later.",
-  "Definitely!",
-  "I don't think so.",
-  "Without a doubt.",
-  "Better not tell you now.",
-  "The outlook is good.",
-  "My sources say no."
-];
-
-let currentAnswer = "";
-let fade = 0;
-let shaking = false;
-let shakeStart = 0;
-let shakeDuration = 800; // milliseconds
-let shakeOffset = 0;
+let snake;
+let rez = 20; // size of each grid cell
+let food;
+let w;
+let h;
+let gameOver = false;
+let score = 0;
 
 function setup() {
   let cnv = createCanvas(400, 400);
   cnv.parent(document.body);
-  noStroke();
+  frameRate(10);
+  w = floor(width / rez);
+  h = floor(height / rez);
+  snake = new Snake();
+  foodLocation();
   textAlign(CENTER, CENTER);
-  textSize(18);
+}
 
-  const button = document.getElementById("askButton");
-  button.addEventListener("click", giveAnswer);
+function foodLocation() {
+  let x = floor(random(w));
+  let y = floor(random(h));
+  food = createVector(x, y);
 }
 
 function draw() {
   background(10);
 
-  // If shaking, calculate horizontal offset
-  if (shaking) {
-    let elapsed = millis() - shakeStart;
-    if (elapsed < shakeDuration) {
-      shakeOffset = sin(elapsed * 0.05) * 10;
-    } else {
-      shaking = false;
-      shakeOffset = 0;
-      fade = 255;
-    }
-  }
-
-  push();
-  translate(width / 2 + shakeOffset, height / 2);
-
-  // Outer ball
-  fill(30);
-  ellipse(0, 0, 300);
-
-  // Inner blue triangle
-  fill(0, 80, 180);
-  triangle(-80, 60, 80, 60, 0, -80);
-
-  // Display the answer
-  if (!shaking && fade > 0) {
-    fill(255, fade);
-    text(currentAnswer, 0, 10);
-    fade -= 2;
-  }
-
-  pop();
-}
-
-function giveAnswer() {
-  const question = document.getElementById("questionInput").value.trim();
-  if (question.length === 0) {
-    currentAnswer = "Ask a question first!";
-    fade = 255;
+  if (gameOver) {
+    fill(255, 0, 0);
+    textSize(24);
+    text("Game Over!", width / 2, height / 2 - 20);
+    textSize(16);
+    text("Press ENTER to restart", width / 2, height / 2 + 10);
+    text(`Score: ${score}`, width / 2, height / 2 + 40);
     return;
   }
 
-  currentAnswer = random(answers);
-  shaking = true;
-  shakeStart = millis();
-  fade = 0;
+  snake.update();
+  snake.show();
+
+  if (snake.eat(food)) {
+    foodLocation();
+    score++;
+  }
+
+  fill(255, 0, 0);
+  noStroke();
+  rect(food.x * rez, food.y * rez, rez, rez);
+
+  fill(255);
+  textSize(14);
+  text(`Score: ${score}`, width / 2, 15);
+}
+
+function keyPressed() {
+  if (keyCode === LEFT_ARROW) {
+    snake.setDir(-1, 0);
+  } else if (keyCode === RIGHT_ARROW) {
+    snake.setDir(1, 0);
+  } else if (keyCode === DOWN_ARROW) {
+    snake.setDir(0, 1);
+  } else if (keyCode === UP_ARROW) {
+    snake.setDir(0, -1);
+  } else if (keyCode === ENTER && gameOver) {
+    resetGame();
+  }
+}
+
+function resetGame() {
+  gameOver = false;
+  score = 0;
+  snake = new Snake();
+  foodLocation();
+}
+
+class Snake {
+  constructor() {
+    this.body = [createVector(floor(w / 2), floor(h / 2))];
+    this.xdir = 0;
+    this.ydir = 0;
+    this.len = 0;
+  }
+
+  setDir(x, y) {
+    // Prevent reversing direction directly
+    if (this.body.length > 1) {
+      let head = this.body[this.body.length - 1];
+      let neck = this.body[this.body.length - 2];
+      if (head.x + x === neck.x && head.y + y === neck.y) return;
+    }
+    this.xdir = x;
+    this.ydir = y;
+  }
+
+  update() {
+    if (this.xdir === 0 && this.ydir === 0) return;
+
+    let head = this.body[this.body.length - 1].copy();
+
+    head.x += this.xdir;
+    head.y += this.ydir;
+
+    // Wrap-around logic
+    if (head.x >= w) head.x = 0;
+    if (head.x < 0) head.x = w - 1;
+    if (head.y >= h) head.y = 0;
+    if (head.y < 0) head.y = h - 1;
+
+    this.body.push(head);
+
+    if (this.body.length > this.len + 1) {
+      this.body.shift();
+    }
+
+    this.endGame();
+  }
+
+  endGame() {
+    let head = this.body[this.body.length - 1];
+    for (let i = 0; i < this.body.length - 1; i++) {
+      let part = this.body[i];
+      if (part.x === head.x && part.y === head.y) {
+        gameOver = true;
+        noLoop();
+      }
+    }
+  }
+
+  eat(pos) {
+    let head = this.body[this.body.length - 1];
+    if (head.x === pos.x && head.y === pos.y) {
+      this.len++;
+      return true;
+    }
+    return false;
+  }
+
+  show() {
+    fill(0, 255, 0);
+    for (let i = 0; i < this.body.length; i++) {
+      let part = this.body[i];
+      rect(part.x * rez, part.y * rez, rez, rez);
+    }
+  }
 }
